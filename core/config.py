@@ -1,7 +1,10 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 class DatabaseSettings(BaseSettings):
@@ -27,6 +30,40 @@ class DatabaseSettings(BaseSettings):
         )
 
 
+class LLMSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="LLM_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    api_key: SecretStr | None = None
+    base_url: str = "https://api.openai.com/v1"
+    model: str = "gpt-4o-mini"
+    mock: bool = False
+    max_healing_attempts: int = 3
+
+    @property
+    def use_mock(self) -> bool:
+        return self.mock or self.api_key is None
+
+
+class ChromaSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="CHROMA_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    persist_dir: Path = PROJECT_ROOT / ".chroma"
+    collection_name: str = "compliance_rules"
+    sentence_window_size: int = 2
+    rrf_k: int = 60
+    top_k: int = 5
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -38,7 +75,10 @@ class Settings(BaseSettings):
     debug: bool = False
     host: str = "0.0.0.0"
     port: int = 8000
+    compliance_manual_path: Path = PROJECT_ROOT / "data" / "compliance_manual.md"
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
+    llm: LLMSettings = Field(default_factory=LLMSettings)
+    chroma: ChromaSettings = Field(default_factory=ChromaSettings)
 
 
 @lru_cache

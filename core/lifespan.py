@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from core.config import settings
+from services.rag.indexer import ComplianceIndexer
 
 
 @asynccontextmanager
@@ -27,5 +28,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     app.state.db_engine = engine
     app.state.db_session_factory = session_factory
+    app.state.settings = settings
+
+    settings.chroma.persist_dir.mkdir(parents=True, exist_ok=True)
+    indexer = ComplianceIndexer(settings.chroma)
+    if not indexer.is_indexed():
+        indexer.index_manual(settings.compliance_manual_path)
+
+    app.state.compliance_indexer = indexer
+
     yield
     await engine.dispose()

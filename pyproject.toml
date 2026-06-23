@@ -8,6 +8,8 @@ dependencies = [
     "sqlmodel>=0.0.22",
     "asyncpg>=0.30",
     "pydantic-settings>=2.7",
+    "chromadb>=0.6",
+    "httpx>=0.28",
 ]
 
 [build-system]
@@ -16,3 +18,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["api", "core", "dao", "models", "schemas", "services"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"data/compliance_manual.md" = "data/compliance_manual.md"
