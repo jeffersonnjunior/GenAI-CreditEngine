@@ -1,8 +1,5 @@
 # 🏆 O DESAFIO MESTRE: GenAI-CreditEngine
 
-[![Status: Desafio](https://img.shields.io/badge/Status-Desafio_Tech_Lead-critical?style=for-the-badge)](https://github.com/)
-[![Stack: Multiagente](https://img.shields.io/badge/Stack-LangGraph_%7C_vLLM_%7C_FastAPI-blue?style=for-the-badge)](https://github.com/)
-
 > **Plataforma Multiagente de Hiperautomação e Concessão de Crédito**
 >
 > Você é o Tech Lead do núcleo de Risco e Onboarding de um Banco Digital (uma *Credit Engine*). A sua instituição tenta escalar a base de clientes, mas a esteira de abertura de contas está colapsando. O objetivo deste projeto é construir um ecossistema autônomo end-to-end capaz de resolver esta dor.
