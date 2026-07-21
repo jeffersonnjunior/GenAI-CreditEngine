@@ -1,16 +1,16 @@
-# 🏆 O DESAFIO MESTRE: GenAI-CreditEngine
+# 🏆 GenAI-CreditEngine
 
 > **Plataforma Multiagente de Hiperautomação e Concessão de Crédito**
->
-> Você é o Tech Lead do núcleo de Risco e Onboarding de um Banco Digital (uma *Credit Engine*). A sua instituição tenta escalar a base de clientes, mas a esteira de abertura de contas está colapsando. O objetivo deste projeto é construir um ecossistema autônomo end-to-end capaz de resolver esta dor.
+
+Você está diante do núcleo de Risco e Onboarding de um Banco Digital (uma *Credit Engine*). O objetivo deste projeto é construir um ecossistema autônomo end-to-end capaz de escalar a esteira de abertura de contas da instituição, resolvendo gargalos críticos de operação através de IA Generativa e orquestração de agentes.
 
 ---
 
 ## 📑 Índice
 1. [O Problema de Negócio](#-1-o-problema-de-negócio-a-dor-da-empresa)
-2. [O Seu Objetivo (OKR)](#-o-seu-objetivo-o-okr)
+2. [O Objetivo (OKR)](#-o-objetivo-okr)
 3. [Arquitetura do Sistema](#-2-a-arquitetura-do-sistema-o-desafio-end-to-end)
-4. [Restrições e Governança (Hard Mode)](#-3-as-restrições-do-tech-lead-hard-mode)
+4. [Restrições e Governança](#-3-restrições-e-governança-hard-mode)
 
 ---
 
@@ -22,7 +22,7 @@ A operação atual enfrenta uma crise sustentada por três gargalos críticos:
 * ⏳ **Gargalo Humano na Mesa de Crédito:** O sistema atual bloqueia todas as propostas que fogem de um "IF/ELSE" simples. Analistas humanos estão gastando dias revisando PDFs de clientes legítimos para liberar limites de crédito, travando a aquisição de novos usuários.
 * 🔌 **Quedas no Ecossistema Externo:** Quando o birô de crédito (Serasa/Boa Vista) ou o Banco Central ficam lentos, a API do banco dá *timeout* e o cliente desiste de abrir a conta.
 
-### 🎯 O Seu Objetivo (O OKR)
+### 🎯 O Objetivo (OKR)
 Construir o **GenAI-CreditEngine**, uma plataforma orquestrada por agentes autônomos capaz de ingerir a proposta, auditar as imagens dos documentos em tempo real e decidir a aprovação ou negação do crédito em segundos. 
 O sistema deve emitir cartões de forma **100% autônoma para limites de até R$ 10.000,00** e barrar divergências de identidade com precisão extrema.
 
@@ -30,48 +30,48 @@ O sistema deve emitir cartões de forma **100% autônoma para limites de até R$
 
 ## 🏗️ 2. A Arquitetura do Sistema (O Desafio End-to-End)
 
-Como Tech Lead, você deve construir este ecossistema do zero, integrando 4 grandes blocos arquiteturais baseados em **Clean Architecture**:
+Este ecossistema foi construído do zero, integrando 4 grandes blocos arquiteturais baseados em uma **Arquitetura Modular (Router-Service-Repository)** em FastAPI:
 
 ### Fase 1: Ingestão Resiliente e RAG Enterprise (Compliance)
 *O banco não pode errar a leitura da própria política de crédito.*
 
-* **O Desafio Técnico:** Subir a API base em **FastAPI** assíncrono. O payload de entrada com os dados da conta sofre de instabilidade. Você deve implementar um loop de *Self-Healing*: se o JSON estourar a validação do Pydantic V2, o LLM intercepta o erro de traceback e corrige a própria estrutura em até 3 tentativas.
-* **A Regra de Negócio (RAG):** O motor não pode inventar taxas ou regras. Você deve indexar o manual de compliance em um **ChromaDB**. O Agente usará o algoritmo de *Sentence Window Retrieval* combinado com *Reciprocal Rank Fusion (RRF)* para puxar a regra exata (ex: *"Clientes do Sul com Score 700 ganham categoria Black"*) antes de calcular o limite.
+* **O Desafio Técnico:** API base em **FastAPI** assíncrono com loop de *Self-Healing*. Se o payload JSON estourar a validação do Pydantic V2, o LLM intercepta o erro de traceback e corrige a própria estrutura em até 3 tentativas.
+* **A Regra de Negócio (RAG):** Manual de compliance indexado em um **ChromaDB**. O Agente usa *Sentence Window Retrieval* combinado com *Reciprocal Rank Fusion (RRF)* para puxar a regra exata antes de calcular o limite.
 
 ### Fase 2: O Cérebro Autônomo (ReAct) e Visão Multimodal
 *O coração do sistema é cognitivo, não linear.*
 
-* **O Motor de Decisão (LangGraph):** Crie um agente em padrão **ReAct (Reason + Action)**. Ele pensa: *"Preciso validar a identidade. Vou acionar a ferramenta OCR"* e depois *"Identidade limpa. Vou puxar a pontuação de crédito"*.
-* **O Desafio Multimodal:** O cliente envia a foto da CNH. Usando **Pillow, OpenCV e Modelos de Visão Multimodal**, o sistema deve ler os dados da foto e fazer um *Cross-Check* estrito. Se a imagem disser "José" e o JSON disser "João", o pipeline aborta por fraude documental.
+* **O Motor de Decisão (LangGraph):** Agente em padrão **ReAct (Reason + Action)**.
+* **O Desafio Multimodal:** Leitura de CNH via **Pillow, OpenCV e Modelos de Visão Multimodal** para *Cross-Check* estrito contra fraudes.
 * **A Matemática de Risco:** 
   * Score < 300: Limite R$ 0.
   * Score entre 300 e 699: Aprova com limite de 10% da renda.
   * Score > 700: Aprova com limite de 30% da renda (teto).
 
 ### Fase 3: Ações Híbridas (APIs vs RPA)
-*O banco tem sistemas modernos e mainframes da década de 90. O Agente deve saber conversar com os dois.*
+*Integração com sistemas modernos e mainframes legados.*
 
-* **Chamadas de Alta Velocidade:** Para emitir o cartão virtual, o Agente aciona a ferramenta que dispara uma requisição HTTP assíncrona (`httpx`) para o gateway do banco.
-* **A Fila de RPA (Legado):** O banco de dados central não tem API. O Agente deve despachar a ordem de criação da conta publicando uma tarefa em um broker **Redis**. Um worker em background (**TaskIQ** ou **Celery**) simula a execução manual do robô no mainframe.
+* **Chamadas de Alta Velocidade:** Emissão de cartão virtual via requisições HTTP assíncronas (`httpx`) para o gateway do banco.
+* **A Fila de RPA (Legado):** Despacho de ordem de criação de conta publicando tarefas em um broker **Redis**. Um worker em background (**TaskIQ** ou **Celery**) simula a execução manual do robô no mainframe.
 
 ### Fase 4: Especialização (Fine-Tuning), Serving Local e Blindagem
-*O sistema precisa de velocidade de inferência e alinhamento corporativo absoluto.*
+*Velocidade de inferência e alinhamento corporativo absoluto.*
 
-* **O Cérebro Customizado (Unsloth + DPO):** Você vai treinar localmente um modelo de 8B (Llama-3). O objetivo é usar `SFTTrainer` e `DPOTrainer` para forçar o modelo a escrever laudos bancários técnicos e rejeitar respostas coloquiais.
-* **Serving de Produção:** Subir esse modelo especializado em um contêiner **Docker** usando **vLLM** (PagedAttention) para segurar alta concorrência.
-* **Filtros de Saída:** O laudo final passa pelo **Microsoft Presidio**. CPFs, valores exatos de conta e nomes próprios são mascarados antes do JSON final ser devolvido ao usuário ou salvo no banco.
+* **O Cérebro Customizado (Unsloth + DPO):** Modelo de 8B (Llama-3) treinado localmente (`SFTTrainer` e `DPOTrainer`) para escrever laudos técnicos.
+* **Serving de Produção:** Contêiner **Docker** com **vLLM** (PagedAttention) para alta concorrência.
+* **Filtros de Saída:** Laudo final passa pelo **Microsoft Presidio** para mascaramento de CPFs, valores exatos e nomes próprios.
 
 ---
 
-## ⚖️ 3. As Restrições do Tech Lead (Hard Mode)
+## ⚖️ 3. Restrições e Governança (Hard Mode)
 
-Para o seu projeto ser considerado nível Sênior/Lead em Inteligência Artificial, ele não pode violar estas três regras de ouro de governança:
+Este projeto atende a três regras de ouro de governança para sistemas de IA corporativos:
 
 * **🧱 A Regra do Pydantic Estrito (Zero Alucinação Estrutural)**
-  O seu LLM não pode responder com texto livre. Todo e qualquer output final da IA deve obrigatoriamente ser formatado, parseado e devolvido como um objeto **JSON estritamente validado pelo schema do Pydantic V2**. Se o agente gerar um laudo fora da formatação, o caso falha.
+  O LLM não responde com texto livre. Todo output final da IA é obrigatoriamente formatado, parseado e devolvido como um objeto **JSON estritamente validado pelo schema do Pydantic V2**.
 
 * **🛡️ A Regra de Contingência Imutável**
-  O sistema é fault-tolerant. Se você simular a queda da API do birô de crédito (desligar o mock), a sua esteira não pode dar erro 500. O agente ReAct deve perceber a falha de conexão, mudar a estratégia de pensamento e **emitir o limite emergencial fixo de R$ 500,00**, gerando um log de aviso de degradação estrutural.
+  O sistema é fault-tolerant. Em caso de queda da API do birô de crédito, o agente ReAct muda a estratégia e **emite um limite emergencial fixo de R$ 500,00**, gerando um log de degradação estrutural (sem erros 500).
 
 * **⏸️ A Regra do State Management (Human-in-the-Loop)**
-  O Agente tem autonomia para emitir cartões na hora até o teto de R$ 10.000,00. No exato instante em que o cálculo de risco do LLM ultrapassar R$ 10.000,01, o nó do **LangGraph** deve obrigatoriamente acionar um `interrupt()`. O estado da memória do Agente é congelado no **SQLite**. O código de emissão do cartão não pode prosseguir até que a rota externa `/override` seja chamada por um "analista". Se um limite de 15k passar sem interrupção, o fluxo está reprovado na homologação.
+  Emissão autônoma limitada ao teto de R$ 10.000,00. Se o cálculo ultrapassar R$ 10.000,01, o nó do **LangGraph** aciona um `interrupt()`. O estado da memória é congelado no **SQLite** e o fluxo aguarda a rota `/override` ser chamada por um analista humano.
