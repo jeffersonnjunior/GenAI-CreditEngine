@@ -1,4 +1,4 @@
-# 🏆 GenAI-CreditEngine
+# 🏆 Desafio GenAI-CreditEngine
 
 > **Plataforma Multiagente de Hiperautomação e Concessão de Crédito Báncario**
 
