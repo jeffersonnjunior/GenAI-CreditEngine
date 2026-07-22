@@ -1,6 +1,6 @@
 # 🏆 GenAI-CreditEngine
 
-> **Plataforma Multiagente de Hiperautomação e Concessão de Crédito**
+> **Plataforma Multiagente de Hiperautomação e Concessão de Crédito Báncario**
 
 Você está diante do núcleo de Risco e Onboarding de um Banco Digital (uma *Credit Engine*). O objetivo deste projeto é construir um ecossistema autônomo end-to-end capaz de escalar a esteira de abertura de contas da instituição, resolvendo gargalos críticos de operação através de IA Generativa e orquestração de agentes.
 
