@@ -2,9 +2,11 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
-.venv/
 dist/
 build/
+
+# uv manages the local env — never commit or activate manually; use `uv run`
+.venv/
 
 # Env / IDE
 .env
