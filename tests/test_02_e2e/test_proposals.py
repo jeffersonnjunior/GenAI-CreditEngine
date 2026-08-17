@@ -35,3 +35,19 @@ async def test_create_proposal_approved() -> None:
     body = response.json()
     assert body["status"] == "approved"
     assert Decimal(body["credit_limit"]) == Decimal("800.00")
+
+
+async def test_create_proposal_invalid_payload_returns_422() -> None:
+    app = get_app()
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        response = await client.post(
+            "/api/v1/proposals",
+            json={"applicant_name": "Maria Silva"},
+        )
+    assert response.status_code == 422
+    body = response.json()
+    assert "healing attempts" in body["detail"]["message"]
+    assert body["detail"]["errors"]
