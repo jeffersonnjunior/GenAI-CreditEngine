@@ -64,6 +64,24 @@ class CreditSettings(BaseSettings):
     """Approved limit = monthly income * this ratio."""
 
 
+class HealingSettings(BaseSettings):
+    """Self-healing ingest settings (LLM provider still pending)."""
+
+    model_config = SettingsConfigDict(env_prefix="HEALING_")
+
+    MAX_ATTEMPTS: int = 3
+    """How many times the healer may rewrite an invalid payload."""
+
+
+class LlmSettings(BaseSettings):
+    """LLM backend selection — real provider is pending."""
+
+    model_config = SettingsConfigDict(env_prefix="LLM_")
+
+    BACKEND: str = "stub"
+    """Use stub until a real model is chosen (openai, vllm, …)."""
+
+
 class EnvSettings(BaseSettings):
     """Environment settings."""
 
@@ -75,6 +93,8 @@ class Settings(
     UvicornSettings,
     CORSSettings,
     CreditSettings,
+    HealingSettings,
+    LlmSettings,
     EnvSettings,
 ):
     """Aggregated settings."""
