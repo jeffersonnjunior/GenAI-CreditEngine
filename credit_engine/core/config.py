@@ -61,7 +61,11 @@ class CreditSettings(BaseSettings):
     MIN_SCORE_TO_APPROVE: int = 300
     """Scores below this value get limit R$ 0."""
     INCOME_LIMIT_RATIO: float = 0.10
-    """Approved limit = monthly income * this ratio."""
+    """Limit ratio for scores in [MIN_SCORE_TO_APPROVE, HIGH_SCORE_THRESHOLD)."""
+    HIGH_SCORE_THRESHOLD: int = 700
+    """Scores at or above this value use HIGH_INCOME_LIMIT_RATIO."""
+    HIGH_INCOME_LIMIT_RATIO: float = 0.30
+    """Approved limit ratio for high-score applicants."""
 
 
 class HealingSettings(BaseSettings):
