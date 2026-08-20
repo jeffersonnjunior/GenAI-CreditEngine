@@ -71,7 +71,7 @@ class CreditSettings(BaseSettings):
 
 
 class HealingSettings(BaseSettings):
-    """Self-healing ingest settings (LLM provider still pending)."""
+    """Self-healing ingest settings."""
 
     model_config = SettingsConfigDict(env_prefix="HEALING_")
 
@@ -80,12 +80,16 @@ class HealingSettings(BaseSettings):
 
 
 class LlmSettings(BaseSettings):
-    """LLM backend selection — real provider is pending."""
+    """LLM backend for self-healing (stub in tests; Gemini in local/dev)."""
 
     model_config = SettingsConfigDict(env_prefix="LLM_")
 
     BACKEND: str = "stub"
-    """Use stub until a real model is chosen (openai, vllm, …)."""
+    """Active healer: stub | gemini."""
+    MODEL: str = "gemini-2.0-flash"
+    """Gemini model id when BACKEND=gemini."""
+    API_KEY: str = ""
+    """Google AI Studio / Gemini API key (required for BACKEND=gemini)."""
 
 
 class BureauSettings(BaseSettings):
