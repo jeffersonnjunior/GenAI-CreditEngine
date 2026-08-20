@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_validator
 
+from credit_engine.core.common.enums.degradation import DegradationMode
 from credit_engine.core.common.enums.proposal import ProposalStatus
 
 
@@ -34,3 +35,5 @@ class CreditDecision(BaseModel):
     credit_limit: Decimal = Field(ge=0, decimal_places=2)
     credit_score: int
     reason: str
+    degradation_mode: DegradationMode = DegradationMode.NONE
+    degradation_log: str | None = None
