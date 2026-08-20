@@ -66,6 +66,8 @@ class CreditSettings(BaseSettings):
     """Scores at or above this value use HIGH_INCOME_LIMIT_RATIO."""
     HIGH_INCOME_LIMIT_RATIO: float = 0.30
     """Approved limit ratio for high-score applicants."""
+    EMERGENCY_LIMIT: float = 500.0
+    """Fixed limit when the credit bureau is unavailable (contingency rule)."""
 
 
 class HealingSettings(BaseSettings):
@@ -86,6 +88,17 @@ class LlmSettings(BaseSettings):
     """Use stub until a real model is chosen (openai, vllm, …)."""
 
 
+class BureauSettings(BaseSettings):
+    """Credit bureau client selection — real HTTP client is pending."""
+
+    model_config = SettingsConfigDict(env_prefix="BUREAU_")
+
+    CLIENT: str = "stub"
+    """Use stub until Serasa/Boa Vista integration exists (stub | unavailable)."""
+    STUB_DEFAULT_SCORE: int = 650
+    """Score returned by the stub bureau for any CPF."""
+
+
 class EnvSettings(BaseSettings):
     """Environment settings."""
 
@@ -99,6 +112,7 @@ class Settings(
     CreditSettings,
     HealingSettings,
     LlmSettings,
+    BureauSettings,
     EnvSettings,
 ):
     """Aggregated settings."""
