@@ -9,6 +9,7 @@ dependencies = [
   "uvicorn>=0.34.0",
   "pydantic>=2.7.0",
   "pydantic-settings>=2.3.4",
+  "google-genai>=2.19.0",
 ]
 
 [dependency-groups]
