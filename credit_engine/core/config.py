@@ -103,6 +103,23 @@ class BureauSettings(BaseSettings):
     """Score returned by the stub bureau for any CPF."""
 
 
+class RagSettings(BaseSettings):
+    """Compliance RAG (Chroma) settings."""
+
+    model_config = SettingsConfigDict(env_prefix="RAG_")
+
+    ENABLED: bool = True
+    """When false, decisions skip policy retrieval."""
+    PERSIST_DIR: str = ".chroma"
+    """Chroma persistence directory (empty / unused in ephemeral test stores)."""
+    COLLECTION_NAME: str = "compliance"
+    """Chroma collection name for policy chunks."""
+    TOP_K: int = 2
+    """How many policy excerpts to attach to each decision."""
+    POLICY_PATH: str = ""
+    """Optional override path to the markdown policy; empty uses package default."""
+
+
 class EnvSettings(BaseSettings):
     """Environment settings."""
 
@@ -117,6 +134,7 @@ class Settings(
     HealingSettings,
     LlmSettings,
     BureauSettings,
+    RagSettings,
     EnvSettings,
 ):
     """Aggregated settings."""
