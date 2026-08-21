@@ -37,3 +37,5 @@ class CreditDecision(BaseModel):
     reason: str
     degradation_mode: DegradationMode = DegradationMode.NONE
     degradation_log: str | None = None
+    compliance_excerpts: list[str] = Field(default_factory=list)
+    """Policy snippets retrieved via compliance RAG (may be empty)."""
