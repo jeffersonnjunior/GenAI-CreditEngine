@@ -11,6 +11,7 @@ Você está diante do núcleo de Risco e Onboarding de um Banco Digital (uma *Cr
 2. [O Objetivo (OKR)](#-o-objetivo-okr)
 3. [Arquitetura do Sistema](#-2-a-arquitetura-do-sistema-o-desafio-end-to-end)
 4. [Restrições e Governança](#-3-restrições-e-governança-hard-mode)
+5. [Libs e repos recomendados](#-4-libs-e-repos-recomendados)
 
 ---
 
@@ -75,3 +76,39 @@ Este projeto atende a três regras de ouro de governança para sistemas de IA co
 
 * **⏸️ A Regra do State Management (Human-in-the-Loop)**
   Emissão autônoma limitada ao teto de R$ 10.000,00. Se o cálculo ultrapassar R$ 10.000,01, o nó do **LangGraph** aciona um `interrupt()`. O estado da memória é congelado no **SQLite** e o fluxo aguarda a rota `/override` ser chamada por um analista humano.
+
+---
+
+## 🧰 4. Libs e repos recomendados
+
+Stack curto alinhado ao roadmap do CreditEngine e a projetos futuros. Prioridade de produto > curiosidade de pesquisa.
+
+### Para este projeto (usar no roadmap)
+
+| Prioridade | Lib / repo | Uso no CreditEngine |
+|---|---|---|
+| Alta | [LangGraph](https://github.com/langchain-ai/langgraph) | Agente ReAct + `interrupt()` HITL (já previsto na arquitetura) |
+| Alta | [microsoft/presidio](https://github.com/microsoft/presidio) | Mascaramento de CPF, nomes e valores no laudo |
+| Alta | [anomalyco/opencode](https://github.com/anomalyco/opencode) + [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) | Agente de código local + práticas Karpathy (acelera o desenvolvimento) |
+| Alta | Eval próprio (golden sets / regressão) | Healing + RAG + bandas de risco — crítico antes de fine-tune |
+| Média | Ideias de [xjdr-alt/entropix](https://github.com/xjdr-alt/entropix) | Sampling / reasoning na inferência do healer (sem treinar modelo) |
+| Média | [Pillow](https://python-pillow.org/) + [OpenCV](https://opencv.org/) + [albumentations](https://github.com/albumentations-team/albumentations) | Visão / CNH e augmentação para antifraude documental |
+| Média | [qubvel-org/segmentation_models.pytorch](https://github.com/qubvel-org/segmentation_models.pytorch) | Segmentação de documento (quando a fase multimodal sair do stub) |
+| Média | [unslothai/unsloth](https://github.com/unslothai/unsloth) + DPO | Fine-tune local do modelo de laudos (Fase 4) |
+| Média | [vllm-project/vllm](https://github.com/vllm-project/vllm) | Serving local de alta concorrência (Docker) |
+| Baixa | [Jiayi-Pan/TinyZero](https://github.com/Jiayi-Pan/TinyZero) → [THUDM/slime](https://github.com/THUDM/slime) | Referência de pós-treino / RL quando houver reward + traces |
+| Baixa | [patrick-kidger/jaxtyping](https://github.com/patrick-kidger/jaxtyping) | Tipagem de tensores se entrar modelo de score / embeddings próprios |
+
+**Ordem sugerida no CreditEngine:** eval → agente LangGraph + HITL → Presidio → visão (Pillow/OpenCV/albumentations) → Unsloth/DPO → vLLM.
+
+### Para projetos futuros (aprendizado / systems)
+
+| Se você quer… | Comece por |
+|---|---|
+| Entender LLM de verdade | [karpathy/minGPT](https://github.com/karpathy/minGPT) → [karpathy/nanochat](https://github.com/karpathy/nanochat) → [KellerJordan/modded-nanogpt](https://github.com/KellerJordan/modded-nanogpt) |
+| Arquiteturas além de Transformer | [state-spaces/mamba](https://github.com/state-spaces/mamba), [BlinkDL/RWKV-LM](https://github.com/BlinkDL/RWKV-LM), [jzhang38/TinyLlama](https://github.com/jzhang38/TinyLlama) |
+| Framework minimalista | [tinygrad/tinygrad](https://github.com/tinygrad/tinygrad); [ml-explore/mlx](https://github.com/ml-explore/mlx) se for Apple Silicon |
+| Perf / kernels GPU | [triton-lang/triton](https://github.com/triton-lang/triton) → [deepseek-ai/TileKernels](https://github.com/deepseek-ai/TileKernels) → [ScalingIntelligence/KernelBench](https://github.com/ScalingIntelligence/KernelBench) → [mirage-project/mirage](https://github.com/mirage-project/mirage) |
+| Plataforma nova (linguagem + serve) | [modular/modular](https://github.com/modular/modular) (Mojo / MAX) |
+
+**Fora do critical path deste repo:** hardware NPU/ANE, Tenstorrent, openpilot/AV, RE de GPU — ótimo para starred list, não para a esteira de crédito.
