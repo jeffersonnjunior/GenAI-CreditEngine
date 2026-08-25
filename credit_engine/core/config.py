@@ -95,14 +95,27 @@ class LlmSettings(BaseSettings):
 
 
 class BureauSettings(BaseSettings):
-    """Credit bureau client selection — real HTTP client is pending."""
+    """Credit bureau client selection."""
 
     model_config = SettingsConfigDict(env_prefix="BUREAU_")
 
     CLIENT: str = "stub"
-    """Use stub until Serasa/Boa Vista integration exists (stub | unavailable)."""
+    """Bureau backend: stub | unavailable | http."""
     STUB_DEFAULT_SCORE: int = 650
     """Score returned by the stub bureau for any CPF."""
+    BASE_URL: str = ""
+    """Base URL for BUREAU_CLIENT=http (e.g. http://localhost:9090)."""
+    TIMEOUT_SECONDS: float = 3.0
+    """HTTP timeout before degrading to the emergency limit."""
+
+
+class DatabaseSettings(BaseSettings):
+    """Async SQLAlchemy database settings."""
+
+    model_config = SettingsConfigDict(env_prefix="DB_")
+
+    URL: str = "sqlite+aiosqlite:///./data/credit_engine.db"
+    """SQLAlchemy async URL (SQLite by default)."""
 
 
 class RagSettings(BaseSettings):
@@ -136,6 +149,7 @@ class Settings(
     HealingSettings,
     LlmSettings,
     BureauSettings,
+    DatabaseSettings,
     RagSettings,
     EnvSettings,
 ):

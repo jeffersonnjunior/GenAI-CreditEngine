@@ -11,6 +11,8 @@ dependencies = [
   "pydantic-settings>=2.3.4",
   "google-genai>=2.19.0",
   "chromadb>=1.5.9",
+  "sqlalchemy[asyncio]>=2.0",
+  "aiosqlite>=0.22.1",
 ]
 
 [dependency-groups]

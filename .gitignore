@@ -24,3 +24,6 @@ build/
 
 # Local Chroma RAG index
 .chroma/
+
+# Local SQLite database
+data/

@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from credit_engine.core.config import Settings
+from credit_engine.dao import init_db
 
 
 def lifespan_factory(
@@ -13,8 +14,8 @@ def lifespan_factory(
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-        # Boot hooks (DB, Redis, Taskiq, Chroma…) land here in later sprints.
         _ = settings
+        await init_db()
         yield
 
     return lifespan
