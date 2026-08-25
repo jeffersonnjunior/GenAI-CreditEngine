@@ -85,7 +85,29 @@ def _decision_from_score(
             f"{percent}% da renda"
         ),
     )
+    decision = _apply_autonomous_cap(decision)
     return _with_compliance(decision, band=band, store=store)
+
+
+def _apply_autonomous_cap(decision: CreditDecision) -> CreditDecision:
+    """Send over-cap approvals to human review (HITL)."""
+    if decision.status is not ProposalStatus.APPROVED:
+        return decision
+    cap = Decimal(str(settings.AUTONOMOUS_LIMIT_CAP)).quantize(
+        _MONEY,
+        rounding=ROUND_HALF_UP,
+    )
+    if decision.credit_limit <= cap:
+        return decision
+    return decision.model_copy(
+        update={
+            "status": ProposalStatus.PENDING_REVIEW,
+            "reason": (
+                f"{decision.reason}. Limite R$ {decision.credit_limit} "
+                f"acima do teto autônomo R$ {cap}; aguarda override humano"
+            ),
+        }
+    )
 
 
 def _emergency_decision(

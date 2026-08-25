@@ -26,6 +26,11 @@ def build_retrieval_query(
             f"score {score} abaixo do mínimo negação limite zero "
             "faixas de score"
         )
+    if status is ProposalStatus.PENDING_REVIEW:
+        return (
+            "human-in-the-loop teto autônomo R$ 10.000 "
+            "override analista emissão"
+        )
     if band is RiskBand.PREMIUM:
         return (
             f"score {score} aprovação limite 30% da renda "

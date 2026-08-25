@@ -125,6 +125,22 @@ async def test_evaluate_proposal_bureau_unavailable_still_approves_low_score() -
     assert decision.credit_limit == Decimal("500.00")
 
 
+async def test_evaluate_proposal_over_cap_goes_to_pending_review() -> None:
+    decision = await evaluate_proposal(
+        ProposalCreate(
+            applicant_name="Rico Silva",
+            cpf="12345678901",
+            monthly_income=Decimal("50000.00"),
+            credit_score=800,
+        ),
+        bureau=FixedScoreBureau(800),
+    )
+    assert decision.status is ProposalStatus.PENDING_REVIEW
+    assert decision.credit_limit == Decimal("15000.00")
+    assert not decision.status.can_emit_card()
+    assert "teto autônomo" in decision.reason
+
+
 @pytest.mark.parametrize("stub_score", [650, 720])
 async def test_evaluate_proposal_uses_bureau_score_not_payload(
     stub_score: int,
