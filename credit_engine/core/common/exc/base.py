@@ -33,3 +33,17 @@ class HealingExhausted(UnprocessableEntity):
                 "errors": errors or [],
             }
         )
+
+
+class NotFound(_BaseHTTPException):
+    """Resource was not found (HTTP 404)."""
+
+    STATUS_CODE = status.HTTP_404_NOT_FOUND
+    DETAIL = "Not found"
+
+
+class Conflict(_BaseHTTPException):
+    """Request conflicts with current resource state (HTTP 409)."""
+
+    STATUS_CODE = status.HTTP_409_CONFLICT
+    DETAIL = "Conflict"

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Literal
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_validator
@@ -26,6 +27,14 @@ class ProposalCreate(BaseModel):
         return digits
 
 
+class OverrideRequest(BaseModel):
+    """Analyst override for a pending_review proposal."""
+
+    decision: Literal["approve", "deny"]
+    analyst: str = Field(min_length=1, max_length=200)
+    note: str | None = Field(default=None, max_length=2000)
+
+
 class CreditDecision(BaseModel):
     """Canonical structured output for a credit decision (Pydantic-strict)."""
 
@@ -39,3 +48,7 @@ class CreditDecision(BaseModel):
     degradation_log: str | None = None
     compliance_excerpts: list[str] = Field(default_factory=list)
     """Policy snippets retrieved via compliance RAG (may be empty)."""
+    analyst: str | None = None
+    """Analyst who applied a human override (if any)."""
+    override_note: str | None = None
+    """Optional note recorded with the override."""
