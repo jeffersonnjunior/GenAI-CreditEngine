@@ -68,6 +68,8 @@ class CreditSettings(BaseSettings):
     """Approved limit ratio for high-score applicants."""
     EMERGENCY_LIMIT: float = 500.0
     """Fixed limit when the credit bureau is unavailable (contingency rule)."""
+    AUTONOMOUS_LIMIT_CAP: float = 10000.0
+    """Above this calculated limit, approval requires human override (HITL)."""
 
 
 class HealingSettings(BaseSettings):
