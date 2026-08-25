@@ -1,3 +1,4 @@
+from credit_engine.clients.bureau.http import HttpBureauClient
 from credit_engine.clients.bureau.protocol import BureauClient
 from credit_engine.clients.bureau.stub import StubBureauClient, UnavailableBureauClient
 from credit_engine.core.config import settings
@@ -10,8 +11,10 @@ def get_bureau() -> BureauClient:
         return StubBureauClient()
     if client == "unavailable":
         return UnavailableBureauClient()
+    if client == "http":
+        return HttpBureauClient()
     msg = (
-        f"Bureau client '{client}' is pending; "
-        "use BUREAU_CLIENT=stub or unavailable"
+        f"Unknown bureau client '{client}'; "
+        "use BUREAU_CLIENT=stub, unavailable, or http"
     )
     raise NotImplementedError(msg)
