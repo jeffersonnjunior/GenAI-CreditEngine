@@ -144,6 +144,18 @@ class RagSettings(BaseSettings):
     """How many policy excerpts to attach to each decision."""
     POLICY_PATH: str = ""
     """Optional override path to the markdown policy; empty uses package default."""
+    SENTENCE_WINDOW: bool = True
+    """Index sentence windows and expand to parent sections on retrieve."""
+    WINDOW_SENTENCES: int = 2
+    """How many sentences per indexed window."""
+    WINDOW_OVERLAP: int = 0
+    """Overlap in sentences between consecutive windows."""
+    RRF_ENABLED: bool = True
+    """Fuse vector and lexical rankings with Reciprocal Rank Fusion."""
+    RRF_K: int = 60
+    """RRF constant (classic default is 60)."""
+    RRF_CANDIDATES: int = 8
+    """How many vector hits to consider before RRF / expansion."""
 
 
 class EnvSettings(BaseSettings):
