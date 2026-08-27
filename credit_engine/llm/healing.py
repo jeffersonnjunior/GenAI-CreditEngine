@@ -16,8 +16,7 @@ async def heal_to_schema[SchemaT: BaseModel](
     """Validate payload against schema, repairing up to MAX_ATTEMPTS times.
 
     The first parse is free. Each ValidationError triggers one heal attempt
-    (stub or Gemini depending on ``LLM_BACKEND``). After exhausting attempts,
-    fail typed.
+    (backend from ``LLM_BACKEND``). After exhausting attempts, fail typed.
     """
     active_healer = healer or get_healer()
     current = payload

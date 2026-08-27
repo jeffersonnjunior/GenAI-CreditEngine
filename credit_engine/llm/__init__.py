@@ -1,4 +1,4 @@
 """LLM providers + self-healing structured output.
 
-Backends: ``LLM_BACKEND=stub`` (default) or ``gemini``.
+Backends: ``stub`` (default), ``gemini``, ``openai_compatible`` / ``llama``.
 """
