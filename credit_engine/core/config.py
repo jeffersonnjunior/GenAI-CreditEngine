@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -82,16 +82,27 @@ class HealingSettings(BaseSettings):
 
 
 class LlmSettings(BaseSettings):
-    """LLM backend for self-healing (stub in tests; Gemini in local/dev)."""
+    """LLM backend for self-healing (stub in tests; Gemini/Ollama in local/dev)."""
 
     model_config = SettingsConfigDict(env_prefix="LLM_")
 
     BACKEND: str = "stub"
-    """Active healer: stub | gemini."""
+    """Active healer: stub | gemini | openai_compatible | llama."""
     MODEL: str = "gemini-2.0-flash"
-    """Gemini model id when BACKEND=gemini."""
+    """Model id (Gemini id, or Ollama/vLLM served name)."""
     API_KEY: str = ""
-    """Google AI Studio / Gemini API key (required for BACKEND=gemini)."""
+    """API key when required (Gemini; optional for local Ollama)."""
+    # Distinct names so Settings does not clash with BureauSettings.BASE_URL.
+    OPENAI_BASE_URL: str = Field(
+        default="http://127.0.0.1:11434/v1",
+        validation_alias=AliasChoices("OPENAI_BASE_URL", "BASE_URL"),
+    )
+    """OpenAI-compatible base URL (env: LLM_BASE_URL or LLM_OPENAI_BASE_URL)."""
+    OPENAI_TIMEOUT_SECONDS: float = Field(
+        default=60.0,
+        validation_alias=AliasChoices("OPENAI_TIMEOUT_SECONDS", "TIMEOUT_SECONDS"),
+    )
+    """HTTP timeout for openai_compatible / llama healers."""
 
 
 class BureauSettings(BaseSettings):
