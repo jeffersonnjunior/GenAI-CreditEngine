@@ -26,6 +26,7 @@ A operação atual enfrenta uma crise sustentada por três gargalos críticos:
 ### 🎯 O Objetivo (OKR)
 Construir o **GenAI-CreditEngine**, uma plataforma orquestrada por agentes autônomos capaz de ingerir a proposta, auditar as imagens dos documentos em tempo real e decidir a aprovação ou negação do crédito em segundos. 
 O sistema deve emitir cartões de forma **100% autônoma para limites de até R$ 10.000,00** e barrar divergências de identidade com precisão extrema.
+Após a emissão, o cliente deve poder **consultar gastos do cartão em linguagem natural** (ex.: iFood no mês) e receber um **relatório estruturado** gerado pelo assistente — sem inventar lançamentos.
 
 ---
 
@@ -55,12 +56,20 @@ Este ecossistema foi construído do zero, integrando 4 grandes blocos arquitetur
 * **Chamadas de Alta Velocidade:** Emissão de cartão virtual via requisições HTTP assíncronas (`httpx`) para o gateway do banco.
 * **A Fila de RPA (Legado):** Despacho de ordem de criação de conta publicando tarefas em um broker **Redis**. Um worker em background (**TaskIQ** ou **Celery**) simula a execução manual do robô no mainframe.
 
+### Fase 3.5: Assistente de Gastos do Cartão (Chatbot NL → Relatório)
+*Depois do cartão existir, o cliente pergunta em linguagem natural e recebe um relatório estruturado — sem SQL na mão do usuário.*
+
+* **O Canal:** Backend de chat (`POST /api/v1/chat/card-spend`) onde o cliente pergunta, por exemplo: *“quanto gastei com iFood no meu cartão este mês?”*.
+* **O Motor:** Agente (LangGraph tool-calling / ReAct) que interpreta a pergunta, identifica merchant/categoria/período e consulta o extrato (SQLite seed / API de transações mock).
+* **A Saída (Pydantic estrito):** Resposta sempre como JSON validado — totais, contagem de lançamentos, período, breakdown e texto curto de relatório (valores passam por Presidio quando a Fase 4 estiver ativa).
+* **Governança:** O LLM **não inventa gastos**; só agrega o que veio das tools. CPF/últimos dígitos do cartão mascarados na resposta ao cliente.
+
 ### Fase 4: Especialização (Fine-Tuning), Serving Local e Blindagem
 *Velocidade de inferência e alinhamento corporativo absoluto.*
 
 * **O Cérebro Customizado (Unsloth + DPO):** Modelo de 8B (Llama-3) treinado localmente (`SFTTrainer` e `DPOTrainer`) para escrever laudos técnicos.
 * **Serving de Produção:** Contêiner **Docker** com **vLLM** (PagedAttention) para alta concorrência.
-* **Filtros de Saída:** Laudo final passa pelo **Microsoft Presidio** para mascaramento de CPFs, valores exatos e nomes próprios.
+* **Filtros de Saída:** Laudo final (e respostas do chatbot de gastos) passa pelo **Microsoft Presidio** para mascaramento de CPFs, valores exatos e nomes próprios.
 
 ---
 
@@ -87,10 +96,9 @@ Stack curto alinhado ao roadmap do CreditEngine e a projetos futuros. Prioridade
 
 | Prioridade | Lib / repo | Uso no CreditEngine |
 |---|---|---|
-| Alta | [LangGraph](https://github.com/langchain-ai/langgraph) | Agente ReAct + `interrupt()` HITL (já previsto na arquitetura) |
-| Alta | [microsoft/presidio](https://github.com/microsoft/presidio) | Mascaramento de CPF, nomes e valores no laudo |
-| Alta | [anomalyco/opencode](https://github.com/anomalyco/opencode) + [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) | Agente de código local + práticas Karpathy (acelera o desenvolvimento) |
-| Alta | Eval próprio (golden sets / regressão) | Healing + RAG + bandas de risco — crítico antes de fine-tune |
+| Alta | [LangGraph](https://github.com/langchain-ai/langgraph) | Agente ReAct + `interrupt()` HITL (já previsto na arquitetura) + chatbot de gastos (tool-calling) |
+| Alta | [microsoft/presidio](https://github.com/microsoft/presidio) | Mascaramento de CPF, nomes e valores no laudo / chat de gastos |
+| Alta | Eval próprio (golden sets / regressão) | Healing + RAG + bandas de risco + perguntas NL→relatório de cartão |
 | Média | Ideias de [xjdr-alt/entropix](https://github.com/xjdr-alt/entropix) | Sampling / reasoning na inferência do healer (sem treinar modelo) |
 | Média | [Pillow](https://python-pillow.org/) + [OpenCV](https://opencv.org/) + [albumentations](https://github.com/albumentations-team/albumentations) | Visão / CNH e augmentação para antifraude documental |
 | Média | [qubvel-org/segmentation_models.pytorch](https://github.com/qubvel-org/segmentation_models.pytorch) | Segmentação de documento (quando a fase multimodal sair do stub) |
@@ -99,7 +107,7 @@ Stack curto alinhado ao roadmap do CreditEngine e a projetos futuros. Prioridade
 | Baixa | [Jiayi-Pan/TinyZero](https://github.com/Jiayi-Pan/TinyZero) → [THUDM/slime](https://github.com/THUDM/slime) | Referência de pós-treino / RL quando houver reward + traces |
 | Baixa | [patrick-kidger/jaxtyping](https://github.com/patrick-kidger/jaxtyping) | Tipagem de tensores se entrar modelo de score / embeddings próprios |
 
-**Ordem sugerida no CreditEngine:** eval → agente LangGraph + HITL → Presidio → visão (Pillow/OpenCV/albumentations) → Unsloth/DPO → vLLM.
+**Ordem sugerida no CreditEngine:** eval → agente LangGraph + HITL → emissão de cartão → **chatbot de gastos (NL→relatório)** → Presidio → visão (Pillow/OpenCV/albumentations) → Unsloth/DPO → vLLM.
 
 ### Para projetos futuros (aprendizado / systems)
 
