@@ -164,6 +164,15 @@ class EnvSettings(BaseSettings):
     ENV: EnvEnum = EnvEnum.LOCAL
 
 
+class AgentSettings(BaseSettings):
+    """Proposal orchestration backend."""
+
+    model_config = SettingsConfigDict(env_prefix="AGENT_")
+
+    ORCHESTRATOR: str = "graph"
+    """Orchestrator: graph (LangGraph) | linear (legacy sequential)."""
+
+
 class Settings(
     AppSettings,
     UvicornSettings,
@@ -174,6 +183,7 @@ class Settings(
     BureauSettings,
     DatabaseSettings,
     RagSettings,
+    AgentSettings,
     EnvSettings,
 ):
     """Aggregated settings."""

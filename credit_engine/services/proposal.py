@@ -2,10 +2,12 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
+from credit_engine.agents.runner import run_proposal_graph
 from credit_engine.clients.bureau.factory import get_bureau
 from credit_engine.clients.bureau.protocol import BureauClient
 from credit_engine.core.common.enums.proposal import ProposalStatus
 from credit_engine.core.common.exc import Conflict, NotFound
+from credit_engine.core.config import settings
 from credit_engine.dao import (
     get_proposal,
     record_to_decision,
@@ -19,18 +21,34 @@ from credit_engine.models.proposal import CreditDecision, OverrideRequest, Propo
 from credit_engine.services import risk as risk_service
 
 
-async def create_proposal(
+async def _create_proposal_linear(
     payload: dict[str, Any],
+    *,
     healer: Healer | None = None,
     bureau: BureauClient | None = None,
 ) -> CreditDecision:
-    """Validate (and optionally heal) a proposal, then evaluate and persist."""
+    """Legacy sequential path (heal → evaluate → persist)."""
     proposal = await heal_to_schema(payload, ProposalCreate, healer=healer)
     client = bureau or get_bureau()
     decision = await risk_service.evaluate_proposal(proposal, bureau=client)
     async with session_scope() as session:
         await save_decision(session, decision, proposal=proposal)
     return decision
+
+
+async def create_proposal(
+    payload: dict[str, Any],
+    healer: Healer | None = None,
+    bureau: BureauClient | None = None,
+) -> CreditDecision:
+    """Validate (and optionally heal) a proposal, then evaluate and persist."""
+    if settings.ORCHESTRATOR == "linear":
+        return await _create_proposal_linear(
+            payload,
+            healer=healer,
+            bureau=bureau,
+        )
+    return await run_proposal_graph(payload, healer=healer, bureau=bureau)
 
 
 async def get_proposal_decision(proposal_id: UUID) -> CreditDecision:
