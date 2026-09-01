@@ -10,6 +10,8 @@ from credit_engine.models.proposal import CreditDecision, ProposalCreate
 class ProposalGraphState(TypedDict):
     """In-memory state passed between proposal graph nodes."""
 
+    thread_id: str
+    """LangGraph thread id (matches persisted proposal_id)."""
     raw_payload: dict[str, Any]
     proposal: ProposalCreate | None
     decision: CreditDecision | None
