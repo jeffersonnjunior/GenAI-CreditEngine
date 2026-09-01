@@ -17,6 +17,7 @@ from credit_engine.llm.healing import heal_to_schema
 from credit_engine.llm.protocol import Healer
 from credit_engine.models.proposal import CreditDecision, OverrideRequest, ProposalCreate
 from credit_engine.services import risk as risk_service
+from credit_engine.vision.verify import apply_vision_to_decision
 
 
 def apply_override_to_decision(
@@ -79,6 +80,23 @@ async def evaluate_node(
         update={"proposal_id": UUID(state["thread_id"])},
     )
     return {"decision": decision}
+
+
+async def vision_node(state: ProposalGraphState) -> dict:
+    """Cross-check CNH identity against the proposal (antifraude)."""
+    proposal = state["proposal"]
+    decision = state["decision"]
+    if proposal is None or decision is None:
+        msg = "vision_node requires proposal and decision"
+        raise RuntimeError(msg)
+    updated = apply_vision_to_decision(
+        proposal,
+        decision,
+        state["raw_payload"],
+    )
+    if updated is decision:
+        return {}
+    return {"decision": updated}
 
 
 async def persist_node(state: ProposalGraphState) -> dict:

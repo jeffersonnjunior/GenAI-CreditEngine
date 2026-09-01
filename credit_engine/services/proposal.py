@@ -19,6 +19,7 @@ from credit_engine.llm.healing import heal_to_schema
 from credit_engine.llm.protocol import Healer
 from credit_engine.models.proposal import CreditDecision, OverrideRequest, ProposalCreate
 from credit_engine.services import risk as risk_service
+from credit_engine.vision.verify import apply_vision_to_decision
 
 
 async def _create_proposal_linear(
@@ -31,6 +32,7 @@ async def _create_proposal_linear(
     proposal = await heal_to_schema(payload, ProposalCreate, healer=healer)
     client = bureau or get_bureau()
     decision = await risk_service.evaluate_proposal(proposal, bureau=client)
+    decision = apply_vision_to_decision(proposal, decision, payload)
     async with session_scope() as session:
         await save_decision(session, decision, proposal=proposal)
     return decision

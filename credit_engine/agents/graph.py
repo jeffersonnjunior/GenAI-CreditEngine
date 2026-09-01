@@ -12,6 +12,7 @@ from credit_engine.agents.nodes import (
     heal_node,
     hitl_gate_node,
     persist_node,
+    vision_node,
 )
 from credit_engine.agents.state import ProposalGraphState
 from credit_engine.clients.bureau.protocol import BureauClient
@@ -24,7 +25,7 @@ def build_proposal_graph(
     bureau: BureauClient | None = None,
     checkpointer: BaseCheckpointSaver | None = None,
 ):
-    """Compile heal → evaluate → persist → HITL → finalize as a StateGraph."""
+    """Compile heal → evaluate → vision → persist → HITL → finalize."""
 
     async def _heal(state: ProposalGraphState) -> dict:
         return await heal_node(state, healer=healer)
@@ -35,12 +36,14 @@ def build_proposal_graph(
     graph = StateGraph(ProposalGraphState)
     graph.add_node("heal", _heal)
     graph.add_node("evaluate", _evaluate)
+    graph.add_node("vision", vision_node)
     graph.add_node("persist", persist_node)
     graph.add_node("hitl_gate", hitl_gate_node)
     graph.add_node("finalize", finalize_persist_node)
     graph.add_edge(START, "heal")
     graph.add_edge("heal", "evaluate")
-    graph.add_edge("evaluate", "persist")
+    graph.add_edge("evaluate", "vision")
+    graph.add_edge("vision", "persist")
     graph.add_edge("persist", "hitl_gate")
     graph.add_edge("hitl_gate", "finalize")
     graph.add_edge("finalize", END)
