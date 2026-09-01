@@ -177,6 +177,25 @@ class AgentSettings(BaseSettings):
     """SQLite file for graph checkpoints (when CHECKPOINT_BACKEND=sqlite)."""
 
 
+class VisionSettings(BaseSettings):
+    """CNH / document vision antifraude settings."""
+
+    model_config = SettingsConfigDict(env_prefix="VISION_")
+
+    CNH_ENABLED: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("CNH_ENABLED", "ENABLED"),
+    )
+    """When false, skip CNH cross-check (env: VISION_CNH_ENABLED or VISION_ENABLED)."""
+    CNH_REQUIRED: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("CNH_REQUIRED", "REQUIRED"),
+    )
+    """When true, proposals must include document_image or cnh_extract."""
+    BACKEND: str = "pillow"
+    """Vision backend: pillow (decode image) | stub (skip Pillow decode)."""
+
+
 class Settings(
     AppSettings,
     UvicornSettings,
@@ -188,6 +207,7 @@ class Settings(
     DatabaseSettings,
     RagSettings,
     AgentSettings,
+    VisionSettings,
     EnvSettings,
 ):
     """Aggregated settings."""
