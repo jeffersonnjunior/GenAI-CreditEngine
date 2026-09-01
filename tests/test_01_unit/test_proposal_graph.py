@@ -10,6 +10,17 @@ from credit_engine.models.proposal import OverrideRequest, ProposalCreate
 from credit_engine.services.proposal import create_proposal, override_proposal
 
 
+def _tiny_png_base64() -> str:
+    import base64
+    from io import BytesIO
+
+    from PIL import Image
+
+    buf = BytesIO()
+    Image.new("RGB", (8, 8), color="white").save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode("ascii")
+
+
 class FixedScoreBureau:
     """Test double that returns a predetermined bureau score."""
 
@@ -33,6 +44,28 @@ async def test_run_proposal_graph_approved_standard() -> None:
     )
     assert decision.status is ProposalStatus.APPROVED
     assert decision.credit_limit == Decimal("1000.00")
+
+
+async def test_run_proposal_graph_cnh_mismatch_pending_review(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("credit_engine.vision.verify.settings.BACKEND", "stub")
+    decision = await run_proposal_graph(
+        {
+            "applicant_name": "Maria Silva",
+            "cpf": "12345678901",
+            "monthly_income": "10000.00",
+            "credit_score": 650,
+            "document_image": _tiny_png_base64(),
+            "cnh_extract": {
+                "applicant_name": "Maria Silva",
+                "cpf": "99999999999",
+            },
+        },
+        bureau=FixedScoreBureau(650),
+    )
+    assert decision.status is ProposalStatus.PENDING_REVIEW
+    assert "Antifraude CNH" in decision.reason
 
 
 async def test_run_proposal_graph_interrupts_on_pending_review() -> None:
