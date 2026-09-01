@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from credit_engine.agents.runner import run_proposal_graph
+from credit_engine.agents.runner import resume_proposal_graph, run_proposal_graph
 from credit_engine.clients.bureau.factory import get_bureau
 from credit_engine.clients.bureau.protocol import BureauClient
 from credit_engine.core.common.enums.proposal import ProposalStatus
@@ -77,6 +77,12 @@ async def override_proposal(
                 )
             )
 
+    if settings.ORCHESTRATOR == "graph":
+        return await resume_proposal_graph(proposal_id, override)
+
+    async with session_scope() as session:
+        record = await get_proposal(session, proposal_id)
+        assert record is not None
         if override.decision == "approve":
             record.status = ProposalStatus.APPROVED.value
             record.reason = (

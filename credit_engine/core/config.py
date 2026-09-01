@@ -171,6 +171,10 @@ class AgentSettings(BaseSettings):
 
     ORCHESTRATOR: str = "graph"
     """Orchestrator: graph (LangGraph) | linear (legacy sequential)."""
+    CHECKPOINT_BACKEND: str = "sqlite"
+    """LangGraph checkpointer: sqlite | memory."""
+    CHECKPOINT_PATH: str = "./data/langgraph_checkpoints.db"
+    """SQLite file for graph checkpoints (when CHECKPOINT_BACKEND=sqlite)."""
 
 
 class Settings(
